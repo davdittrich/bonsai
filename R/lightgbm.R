@@ -81,7 +81,7 @@ train_lightgbm <- function(x, y, max_depth = -1, num_iterations = 100, learning_
   args <- process_bagging(args, ...)
 
   args <- process_data(args, x, y, validation, missing(validation),
-                       early_stopping_round)
+                       early_stopping_round, weights)
 
   args <- sort_args(args)
 
@@ -195,7 +195,7 @@ process_bagging <- function(args, ...) {
 }
 
 process_data <- function(args, x, y, validation, missing_validation,
-                         early_stopping_round) {
+                         early_stopping_round, weights) {
   #                                           trn_index       | val_index
   #                                         ----------------------------------
   #  needs_validation &  missing_validation | 1:n               1:n
@@ -224,7 +224,8 @@ process_data <- function(args, x, y, validation, missing_validation,
       data = prepare_df_lgbm(x[trn_index, , drop = FALSE]),
       label = y[trn_index],
       categorical_feature = categorical_columns(x[trn_index, , drop = FALSE]),
-      params = list(feature_pre_filter = FALSE)
+      params = list(feature_pre_filter = FALSE),
+      weight = weights[trn_index]
     )
 
   if (!is.null(val_index)) {
@@ -234,7 +235,8 @@ process_data <- function(args, x, y, validation, missing_validation,
           data = prepare_df_lgbm(x[val_index, , drop = FALSE]),
           label = y[val_index],
           categorical_feature = categorical_columns(x[val_index, , drop = FALSE]),
-          params = list(feature_pre_filter = FALSE)
+          params = list(feature_pre_filter = FALSE),
+          weight = weights[val_index]
         )
       )
   }
